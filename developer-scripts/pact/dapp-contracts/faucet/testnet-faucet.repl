@@ -1,0 +1,3 @@
+(env-keys ["faucetadmin"])
+(env-data { "contract-admins":
+  { "keys": ["faucetadmin"], "pred": "keys-all" } })

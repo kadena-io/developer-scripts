@@ -1,0 +1,187 @@
+(begin-tx)
+
+
+(env-data { "k1" : ["keys1"],
+  "k2": ["keys2"],
+  "k3": ["keys3"],
+  "croesus-keyset" : ["croesus-key"],
+  "parrot-admin-keyset": ["croesus-key"],
+  "player-one": ["p1-keys"],
+  "player-two": ["p2-keys"],
+  "p3": ["p3-keys"],
+  "parrot-bank": ["parrot-bank-key"]})
+(env-keys ["keys1", "keys2",
+  "keys3", "croesus-key",
+  "p1-keys", "p2-keys",
+  "p3-keys", "parrot-bank-key"])
+;(define-keyset 'k1 (read-keyset "k1"))
+;(define-keyset 'k2 (read-keyset "k2"))
+;(define-keyset 'k3 (read-keyset "k3"))
+
+(define-keyset "parrots-admin-keyset" (read-keyset "parrot-admin-keyset"))
+
+
+(load "../coin-contract/coin.pact")
+(load "pacty-parrots.pact")
+
+
+
+
+(commit-tx)
+
+(begin-tx)
+
+(use coin)
+
+(test-capability (COINBASE))
+(coinbase 'k1 (read-keyset 'k1) 10.0)
+(coinbase 'k2 (read-keyset 'k2) 10.0)
+(coinbase "croesus" (read-keyset "croesus-keyset") 50000.0)
+(coinbase "parrot-bank" (read-keyset "croesus-keyset") 50000.0)
+
+(commit-tx)
+
+(begin-tx)
+
+;important for our randomness...
+(env-chain-data {
+  "chain-id": "0",
+  "block-height": 20,
+  "prev-block-hash": "dsdjhhaaaaahhakjsxxxxxkjd===haskjdhahhhskd"})
+
+(commit-tx)
+
+(begin-tx)
+
+(use pacty-parrots)
+(use coin)
+
+(env-data { "k1" : ["keys2"],
+  "k2": ["keys2"],
+  "k3": ["keys3"],
+  "croesus-keyset" : ["croesus-key"],
+  "parrot-admin-keyset": ["croesus-key"],
+  "player-one": ["p1-keys"],
+  "player-two": ["p2-keys"],
+  "p3": ["p3-keys"],
+  "parrot-bank": ["parrot-bank-key"]})
+(env-keys ["keys1", "keys2",
+  "keys3", "croesus-key",
+  "p1-keys", "p2-keys",
+  "p3-keys", "parrot-bank-key"])
+
+  (env-chain-data {
+    "chain-id": "0",
+    "block-height": 20,
+    "prev-block-hash": "dsdjhhhhakjssssasasasasskdhahhhskd"})
+
+(start-round "k1" (read-keyset "k1") 10.0)
+(get-current-round-info "k1")
+(account-balance "k1")
+;(parrot-draw)
+(env-chain-data {
+  "chain-id": "0",
+  "block-height": 20,
+  "prev-block-hash": "dsdjhhhhakjssssasasasasskdhahhhskd"})
+(continue-round "k1")
+(get-current-round-info "k1")
+
+
+
+;closes the round
+;(env-chain-data {
+;  "chain-id": "0",
+;  "block-height": 20,
+;  "prev-block-hash": "dsdjkjdhjdsjhdshjskd"})
+;(continue-round 0 "k1")
+
+(env-chain-data {
+  "chain-id": "0",
+  "block-height": 20,
+  "prev-block-hash": "dsdjkjdhjsadsadasadsdsjhdshjskd"})
+(continue-round "k1")
+(get-current-round-info "k1")
+(end-round "k1")
+(get-current-round-info "k1")
+(account-balance "k1")
+
+
+
+(get-table "k1")
+
+(env-chain-data {
+  "chain-id": "0",
+  "block-height": 20,
+  "prev-block-hash": "dsdjkjdhjsadsadsdsjhdshjskd"})
+(start-round "k1" (read-keyset "k1") 10.0)
+(get-current-round-info "k1")
+;(account-balance "k1")
+;(env-chain-data {
+;  "chain-id": "0",
+;  "block-height": 20,
+;  "prev-block-hash": "dsdjhhhhakjskdhahhhskd"})
+(continue-round "k1")
+(get-current-round-info "k1")
+(env-chain-data {
+  "chain-id": "0",
+  "block-height": 20,
+  "prev-block-hash": "dsdjkjdhjsajfjjjffjfjjffjsdsjhdshjskd"})
+(continue-round "k1")
+(get-current-round-info "k1")
+(end-round "k1")
+(get-current-round-info "k1")
+(account-balance "k1")
+
+
+(env-chain-data {
+  "chain-id": "0",
+  "block-height": 20,
+  "prev-block-hash": "dsdjkjdhjsadsssssjhdsajhdsajhkdkhsajkhjdashkjadaaaasdsjhdshjskd"})
+(start-round "k1" (read-keyset "k1") 10.0)
+(get-current-round-info "k1")
+;(account-balance "k1")
+;(env-chain-data {
+;  "chain-id": "0",
+;  "block-height": 20,
+;  "prev-block-hash": "dsdjhhhhakjskdhahhhskd"})
+(continue-round "k1")
+(get-current-round-info "k1")
+(env-chain-data {
+  "chain-id": "0",
+  "block-height": 20,
+  "prev-block-hash": "dsdjkjdhjsasdasdasdasdasdasdsjhdshjskd"})
+(continue-round "k1")
+(get-current-round-info "k1")
+(end-round "k1")
+(get-current-round-info "k1")
+(account-balance "k1")
+
+
+
+(start-round "k1" (read-keyset "k1") 10.0)
+(get-current-round-info "k1")
+(account-balance "k1")
+;(parrot-draw)
+(env-chain-data {
+  "chain-id": "0",
+  "block-height": 20,
+  "prev-block-hash": "dsdjhhhhakjssssasasasasskdhahhhskd"})
+(continue-round "k1")
+(get-current-round-info "k1")
+(end-round "k1")
+
+
+(get-table "k1")
+
+(get-users)
+
+(commit-tx)
+
+
+(begin-tx)
+
+(use pacty-parrots)
+
+(get-current-round-info "k1")
+
+(commit-tx)

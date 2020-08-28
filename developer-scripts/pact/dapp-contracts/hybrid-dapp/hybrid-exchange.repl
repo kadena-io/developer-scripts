@@ -1,0 +1,90 @@
+
+;-----------------SETUP-------------
+(begin-tx)
+
+(env-data {
+  "admin": ["admin-key"],
+  "u1": ["u1-key"],
+  "u2": ["u2-key"],
+  "u3": ["u3-key"],
+  "u4": ["u4-key"]
+})
+(env-keys [
+  "admin-key",
+  "u1-key",
+  "u2-key",
+  "u3-key",
+  "u4-key"
+])
+
+(define-keyset "admin" (read-keyset "admin"))
+
+(load "../coin/coin.pact")
+(commit-tx)
+
+;-----------------COIN ALLOCATION-------------
+(begin-tx)
+
+(use coin)
+
+(test-capability (COINBASE))
+(coinbase "admin" (read-keyset "admin") 10000.0)
+(coinbase "u1" (read-keyset "u1") 100.0)
+(coinbase "u2" (read-keyset "u2") 100.0)
+(coinbase "u3" (read-keyset "u3") 100.0)
+(coinbase "u4" (read-keyset "u4") 100.0)
+
+(load "hybrid-exchange.pact")
+
+(commit-tx)
+
+;-----------------BUY/SELL TEST-------------
+(begin-tx)
+
+(use coin)
+(use hybrid-exchange)
+
+(buy-ht "u1" 1.0)
+(expect "ht balance 1.0" 1.0 (get-balance "u1"))
+(expect "coin balance 99.0" 99.0 (coin.account-balance "u1"))
+
+(sell-ht "u1" 1.0)
+(expect "ht balance 0.0" 0.0 (get-balance "u1"))
+(expect "coin balance 100.0" 100.0 (coin.account-balance "u1"))
+
+(commit-tx)
+
+;-----------------BUY AND REQUEST TEST---------------
+(begin-tx)
+
+(use coin)
+(use hybrid-exchange)
+
+(buy-ht "u1" 2.0)
+(expect "ht balance 2.0" 2.0 (get-balance "u1"))
+(expect "admin balance TOTAL_SUPPLY - 2" 999998.0 (get-balance "admin"))
+(expect "coin balance 98.0" 98.0 (coin.account-balance "u1"))
+;300 -> 302 for ht-admin -> module guard account that we create
+(expect "coin balance admin 300 + 2.0" 302.0 (coin.account-balance "ht-admin"))
+
+(trans-to-priv "u1" 2.0)
+;produces id of "u1-000000"
+(get-tx "u1-000000")
+(expect "status open" "open" (at "status" (get-tx "u1-000000")))
+(expect "amount 2.0" 2.0 (at "amount" (get-tx "u1-000000")))
+
+;ADMIN SEES THE REQUEST IN MIDDLEWARE
+(debit-ht "u1" 2.0)
+(expect "ht balance 0.0" 0.0 (get-balance "u1"))
+(expect "admin balance back to TOTAL_SUPPLY" 1000000.0 (get-balance "admin"))
+
+;try confirm
+(confirm-transfer-to-kuro "u1-000000")
+(expect "status closed" "closed" (at "status" (get-tx "u1-000000")))
+
+;try reject -> this is called if debit-ht fails
+; which means that user made request, but lowered ht balance
+(reject-transfer-to-kuro "u1-000000")
+(expect "status rejected" "rejected" (at "status" (get-tx "u1-000000")))
+
+(commit-tx)

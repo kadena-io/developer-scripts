@@ -1,0 +1,10 @@
+(env-keys ["silvertoken"])
+(env-data { "silvertoken-admin":
+  { "keys": ["silvertoken"], "pred": "keys-all" } })
+
+(begin-tx)
+(load "stablecoin.pact")
+(commit-tx)
+
+
+;; Write repl tests

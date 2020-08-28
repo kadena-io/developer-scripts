@@ -1,0 +1,154 @@
+;; ===============
+;; Setup
+;; ===============
+(begin-tx)
+(load ".coin.pact")
+
+; Create r coin contract account
+(env-data { 'ks: ["adminKey"] })
+(coin.create-account "covid-admin" (read-keyset "ks"))
+
+(env-keys ["adminKey"])
+(load "covid-v2.pact")
+;(typecheck "user.covid" true)
+
+
+
+; Create covid contract tables
+(env-keys ["somePublicKeyForr"])
+(env-keys ["adminKey"])
+(create-table test-table-three)
+(create-table printer-table-three)
+(commit-tx)
+
+
+;; ===============
+;; TEST: registering a printer
+;; ===============
+(begin-tx)
+(env-keys [])
+(use user.covid)
+
+(expect-failure
+  "non-admin account cannot register a new printing entity"
+  "Keyset failure"
+  (create-printing-entity "some pub key" "some entity"))
+
+;must sign with admin key
+(env-keys ["adminKey"])
+
+(env-data { 'ks: ["somePublicKeyForPrinter0"] })
+(expect
+  "admin can add printer"
+  "Entity entity0 is now authorized to register and print test labels with pub-key=somePublicKeyForPrinter0"
+  (create-printing-entity "somePublicKeyForPrinter0" "entity0"))
+
+
+(commit-tx)
+;; ===============
+;; TEST: registering a test with its pub key
+;; ===============
+(begin-tx)
+(env-keys [])
+(env-keys ["adminKey"])
+(use user.covid)
+
+(expect-failure
+  "non-admin cannot register a test"
+  "Keyset failure"
+  (register-test "somePublicKeyForPrinter0" "some manufacturer 0" "some model 0" [{"acct-name": "key-one", "ks-name": "ks1"},{"acct-name": "key-two", "ks-name": "ks2"}]))
+
+; Must sign with a registered entity key
+(env-keys ["somePublicKeyForPrinter0"])
+
+; (env-data { 'ks: ["somePublicKeyForTest0"] })
+(env-data { "ks1": ["key-one"], "ks2": ["key-two"]})
+(expect
+  "priting entity can add test"
+  "2 tests registered on chain by printer=somePublicKeyForPrinter0"
+  (register-test "somePublicKeyForPrinter0" "some manufacturer 0" "some model 0" [{"acct-name": "key-one", "ks-name": "ks1"},{"acct-name": "key-two", "ks-name": "ks2"}]))
+
+(expect
+  "coin account created for test"
+  "key-one"
+  (at "account" (coin.details "key-one")))
+
+(env-data { 'ks1: ["pub-key1"], 'ks2: ["pub-key2"] })
+(register-test "somePublicKeyForPrinter0" "some manufacturer 0" "some model 0" [{"acct-name": "pub-key1", "ks-name": "ks1"},{"acct-name": "pub-key2", "ks-name": "ks2"}])
+(commit-tx)
+
+;; ===============
+;; TEST: adminitering a test
+;; ===============
+(begin-tx)
+(env-keys [])
+(use user.covid)
+
+(expect-failure
+  "only registered tests can be adminitered"
+  "row not found: randomPubKey"
+  (administer-test "randomPubKey" "0-10" "male" "USA" "11249" "someRandomHash"))
+
+(env-keys ["randomPublicKey"])
+(expect-failure
+  "test must be signed with corresponding keys in coin contract"
+  "Keyset failure"
+  (administer-test "pub-key1" "0-10" "male" "USA" "11249" "someRandomHash"))
+
+(env-chain-data { "chain-id": "0", "block-height": 20 })
+(env-keys ["pub-key1"])
+(expect-failure
+  "test must be adminitered before it is ended"
+  "this test has not yet been administered"
+  (end-test "pub-key1" "negative"))
+
+(env-chain-data { "chain-id": "0", "block-height": 20 })
+(env-keys ["pub-key1"])
+(expect
+  "test must be signed with corresponding keys in coin contract"
+  "Test with public key=pub-key1 administered to patient=someRandomHash"
+  (administer-test "pub-key1" "0-10" "male" "USA" "11249" "someRandomHash"))
+
+(env-chain-data { "chain-id": "0", "block-height": 25 })
+(env-keys ["pub-key1"])
+(expect-failure
+  "test cannot be administered twice"
+  "this test has already been administered"
+  (administer-test "pub-key1" "0-10" "male" "USA" "11249" "someRandomHash"))
+
+(commit-tx)
+
+
+;; ===============
+;; TEST: ending a test
+;; ===============
+(begin-tx)
+(env-keys [])
+(use user.covid)
+
+(expect-failure
+  "only registered tests can be ended"
+  "row not found: randomPubKey"
+  (end-test "randomPubKey" "negative"))
+
+(env-keys ["randomPublicKey"])
+(expect-failure
+  "test must be signed with corresponding keys in coin contract"
+  "Keyset failure"
+  (end-test "pub-key1" "negative"))
+
+(env-chain-data { "chain-id": "0", "block-height": 20 })
+(env-keys ["pub-key1"])
+(expect
+  "test must be signed with corresponding keys in coin contract"
+  "Test with public key=pub-key1 ended with result=negative"
+  (end-test "pub-key1" "negative"))
+
+(env-chain-data { "chain-id": "0", "block-height": 25 })
+(env-keys ["pub-key1"])
+(expect-failure
+  "test cannot be ended twice"
+  "this test has already been ended"
+  (end-test "pub-key1" "negative"))
+
+(commit-tx)

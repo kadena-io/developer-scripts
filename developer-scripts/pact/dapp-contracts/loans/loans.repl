@@ -1,0 +1,38 @@
+
+(env-keys ["loansadmin"])
+(env-data { "loans-admin-keyset":
+  { "keys": ["loansadmin"], "pred": "keys-all" } })
+
+(begin-tx)
+(load "loans.pact")
+
+(commit-tx)
+;(typecheck 'loans)
+
+(begin-tx)
+
+(use loans)
+
+(create-a-loan "loanId-1" "loan1" "Capital One" 50000) ;; loanId, loanName, entityName, amount
+
+
+
+(assign-a-loan "txid-1" "loanId-1" "buyer1" 10000) ;; loanId, buyer, amount
+(sell-a-loan "txid-2" "loanId-1" "buyer2" "buyer1" 2000) ;; loanId, seller, buyer, amount
+(sell-a-loan "txid-3" "loanId-1" "buyer3" "buyer1" 2000) ;; loanId, seller, buyer, amount
+
+
+(commit-tx)
+
+(begin-tx)
+
+(use loans)
+
+;; Check history of the loan
+
+(read-loan-inventory)
+
+(read-loans-with-status INITIATED)
+(read-loans-with-status ASSIGNED)
+
+(commit-tx)
