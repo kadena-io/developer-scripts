@@ -1,1 +1,20 @@
-;; Write Repl tests
+(env-keys ["hello-keyset"])
+(env-data {
+  "hello-keyset": { "keys": ["hello"], "pred": "keys-all" }})
+
+(begin-tx)
+(load "hello-world.pact")
+(commit-tx)
+
+(use hello-world)
+
+;;Add greeters "Kadena", "Chainweb", "Mainnet". "20-chain"
+(expect "Kadena was here." "Kadena was here." (here "Kadena"))
+(expect "Chainweb was here." "Chainweb was here." (here "Chainweb"))
+(expect "Mainnet was here." "Mainnet was here." (here "Mainnet"))
+(expect "20-chain was here." "20-chain was here." (here "20-chain"))
+
+(expect "Kadena" "Kadena" (lookup "0"))
+(expect "Chainweb" "Chainweb" (lookup "1"))
+(expect "Mainnet" "Mainnet" (lookup "2"))
+(expect "20-chain" "20-chain" (lookup "3"))
