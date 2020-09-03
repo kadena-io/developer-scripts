@@ -1,7 +1,7 @@
 # DApp Contracts
 
 Smart Contracts for Dapps on Kadena Mainnet and Testnet.
-Learn about Atom development environment with pact and repl files [here](https://pactlang.org/beginner/pact-on-atom-sdk/)
+Learn about writing Pact development on Atom SDK [here](https://pactlang.org/beginner/pact-on-atom-sdk/)
 
 ## [Stable Coin](stablecoin)
   - Sample Contract to create a custom token, `my-token`.
@@ -25,7 +25,7 @@ Learn about Atom development environment with pact and repl files [here](https:/
   - Demo: https://pactyparrots.testnet.chainweb.com/
 
 ## [Crowdfunding](crowdfund)
-  - Decentralized crowdfunding contract that uses Pact's unique multi-step transactions named [pacts](https://pact-language.readthedocs.io/en/latest/pact-reference.html#asynchronous-transaction-automation-with-pacts).
+  - Decentralized crowdfunding contract that uses Pact's unique multi-step transactions, [pacts](https://pact-language.readthedocs.io/en/latest/pact-reference.html#asynchronous-transaction-automation-with-pacts).
 
 ## [Manage Loans](loans)
   - Loan Managing Contract to create, distribute, and manage loans.
