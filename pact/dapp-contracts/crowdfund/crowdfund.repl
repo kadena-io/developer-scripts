@@ -1,8 +1,9 @@
 (begin-tx)
 (env-keys ["admin" "kate" "bob" "crowd" "s"])
 (env-data { "admin-keyset": ["admin"],"crowd-keyset": ["crowd"], "kate-keyset": ["kate"], "bob-keyset": ["bob"] })
-(load "coin-sig.pact")
-(load "coin.pact")
+(load "../coin-contract/fungible-v2.pact")
+(load "../coin-contract/coin.pact")
+(create-table coin.coin-table)
 (load "crowdfund-pacts.pact")
 (commit-tx)
 (typecheck 'crowdfund-campaign)
@@ -12,10 +13,11 @@
 (use crowdfund-campaign)
 (use coin)
 
-(test-capability (TRANSFER))
+(test-capability (CREDIT "kate-acct"))
 (create-account "kate-acct" (read-keyset "kate-keyset"))
 (credit "kate-acct" (read-keyset "kate-keyset") 500.0)
 
+(test-capability (CREDIT "bob-acct"))
 (create-account "bob-acct" (read-keyset "bob-keyset"))
 (credit "bob-acct" (read-keyset "bob-keyset") 500.0)
 
@@ -29,24 +31,38 @@
 (begin-tx)
 (use crowdfund-campaign)
 (use coin)
-(env-chain-data {"block-time": (time "2019-08-22T12:00:00Z")})
 
-(fund-campaign "kate-acct" "project1" 400.0)
+(env-chain-data {"block-time": (time "2019-08-22T12:00:00Z")})
+(env-sigs [{
+  'key: "kate",
+  'caps: [
+    (coin.TRANSFER "kate-acct" "escrow-0" 400.0)
+    (ACCT_GUARD "kate-acct")]}])
+
+(fund-campaign "kate-acct" "project1" 400.0 "escrow-0")
 (commit-tx)
+
 (begin-tx)
 (use crowdfund-campaign)
 
 (env-hash (hash "hello"))
-(fund-campaign "bob-acct" "project1" 500.0)
+
+(env-sigs [{
+  'key: "bob",
+  'caps: [
+    (coin.TRANSFER "bob-acct" "escrow-1" 500.0)
+    (ACCT_GUARD "bob-acct")]}])
+
+(fund-campaign "bob-acct" "project1" 500.0 "escrow-1")
 (commit-tx)
 
 (begin-tx)
 (use crowdfund-campaign)
-(at 'guard (coin.account-info 'kate-acct))
-(coin.account-balance 'kate-acct)
-(continue-pact 0 true "DldRwCblQ7Loqy6wYJnaodHl30d3j3eH-qtFzfEv46g")
+(at 'guard (coin.details 'kate-acct))
+(coin.get-balance 'kate-acct)
+;(continue-pact 0 true "DldRwCblQ7Loqy6wYJnaodHl30d3j3eH-qtFzfEv46g")
 (continue-pact 0 true "Mk3PAn3UowqTLEQfNlol6GsXPe-kuOWJSCU0cbgbcs8")
-(coin.account-balance 'kate-acct)
+(coin.get-balance 'kate-acct)
 (rollback-tx)
 
 (begin-tx)
@@ -55,7 +71,6 @@
 (env-chain-data {"block-time": (time "2019-08-27T12:00:00Z")})
 (expect-failure "Campaign has ended" (continue-pact 0 true "DldRwCblQ7Loqy6wYJnaodHl30d3j3eH-qtFzfEv46g"))
 (rollback-tx)
-
 
 (begin-tx)
 (use crowdfund-campaign)
@@ -104,7 +119,7 @@
   (continue-pact 0 true "Mk3PAn3UowqTLEQfNlol6GsXPe-kuOWJSCU0cbgbcs8"))
 (continue-pact 1 false "DldRwCblQ7Loqy6wYJnaodHl30d3j3eH-qtFzfEv46g")
 (continue-pact 1 false "Mk3PAn3UowqTLEQfNlol6GsXPe-kuOWJSCU0cbgbcs8")
-(expect "money went through after campaign success" 900.0 (coin.account-balance 'crowd-acct))
+(expect "money went through after campaign success" 900.0 (coin.get-balance 'crowd-acct))
 (commit-tx)
 
 (begin-tx)
@@ -112,5 +127,5 @@
 (env-hash (hash "hellddo"))
 (continue-pact 1 false "DldRwCblQ7Loqy6wYJnaodHl30d3j3eH-qtFzfEv46g")
 (continue-pact 1 false "Mk3PAn3UowqTLEQfNlol6GsXPe-kuOWJSCU0cbgbcs8")
-(expect "money went through after campaign success" 900.0 (coin.account-balance 'crowd-acct))
+(expect "money went through after campaign success" 900.0 (coin.get-balance 'crowd-acct))
 (rollback-tx)

@@ -229,4 +229,5 @@
     (at 'block-time (chain-data)))
 )
 
+(create-table campaigns-table)
 (create-table fund-table)
