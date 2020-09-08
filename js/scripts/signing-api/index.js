@@ -1,56 +1,49 @@
 #!/usr/bin/env node
-
 "use strict";
-var fetch = require("node-fetch")
-const fs = require('fs');
 
-/**
- * Formats ExecCmd into api request object
- */
-var mkReq = function(cmd) {
+const Pact = require("pact-lang-api");
+const { question, exitMessage } = require("../../util/util")
+const fetch = require("node-fetch")
+const sampleBuilder = (sender) => {
+  if (!sender) sender = "noSender"
   return {
-    headers: {
-      "Content-Type": "application/json"
-    },
-    method: "POST",
-    body: JSON.stringify(cmd)
-  };
+    pactCode: `(format "Hello" [])`,
+    caps: [Pact.lang.mkCap(
+      //Role of the Capability
+      "Sign for Gas Fee",
+      //Description of the Capability
+      "Capability to scope the signature for GAS fee",
+      //Name of the Capability
+      "coin.GAS",
+      //Arguments of the Capability
+      []
+    )],
+    envData: {},
+    sender: sender,
+    chainId: "0",
+    gasLimit: 600,
+    nonce: "Developer Script - Signing Api",
+    ttl: 600
+  }
 };
 
-const signWallet = async function (pactCode, envData, sender, chainId, gasLimit, nonce){
-  if (!pactCode)  throw new Error(`Pact.wallet.sign(): No Pact Code provided`);
-  const cmd = {
-    code: pactCode,
-    data: envData,
-    sender: sender,
-    chainId: chainId,
-    gasLimit: gasLimit,
-    nonce: nonce
-  }
-  const res = await fetch('http://127.0.0.1:9467/v1/sign', mkReq(cmd))
-  const resJSON = await res.json();
-  return resJSON.body;
+const apiHost = (node, networkId, chainId) => `https://${node}/chainweb/0.0/${networkId}/chain/${chainId}/pact`;
+
+const main = async () => {
+
+  let sender = await question("Sample Script to use Signing Api to sign a command. Please have your Chainweaver open. If you have an testnet account, type in your account. Else, type in anything.\n");
+  const cmd = sampleBuilder(sender);
+
+  console.log("Printing the Command Details...\n");
+  Object.keys(cmd).forEach( key => {
+    console.log(key, ": ", cmd[key]);
+  })
+
+  await question("\nSending Request to Chainweaver to sign command. Enter to Continue\n");
+  const signedCmd = await Pact.wallet.sign(cmd);
+  console.log(signedCmd)
+
+  exitMessage("End of the script")
 }
 
-/**
- * Sends a signed Pact command to a running Pact server and retrieves tx result.
- * @param {{signedCmd: <rk:string>}} listenCmd reqest key of tx to listen.
- * @param {string} apiHost host running Pact server
- * @return {object} Request key of the tx received from pact server.
- */
-const sendSigned = async function (signedCmd, apiHost) {
-  const cmd = {
-    "cmds": [ signedCmd ]
-  }
-  const txRes = await fetch(`${apiHost}/api/v1/send`, mkReq(cmd));
-  const tx = await txRes.json();
-  return tx;
-}
-
-const deploy = async function (code, envData, chainId){
-  const cmd = await signWallet(code, envData, null, chainId, 10000);
-  const reqKey = await sendSigned(cmd, "https://eu1.testnet.chainweb.com/chainweb/0.0/testnet03/chain/0/pact")
-  console.log(reqKey)
-}
-
-// Add Scripts
+main();
