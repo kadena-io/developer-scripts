@@ -21,5 +21,5 @@ npm run simple
 ## Signing API
 You will need to have [Chainweaver](https://www.kadena.io/chainweaver) installed and open. Learn the coolest way of signing an already built command.
 ```
-npm run signing-api
+npm run sign
 ```
