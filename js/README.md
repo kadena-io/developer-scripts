@@ -12,7 +12,7 @@ npm install
 ## Simple Requests
 Run the following command to learn the simplest way to use the basic Pact API endpoints: `/send` `/local` `/poll` `/listen`.
 
-Learn about the Building Pact Command (local and Exec) and the Pact Rest API [here](https://pact-language.readthedocs.io/en/latest/pact-reference.html#rest-api)
+Learn about the Building Pact Commands and using the Pact Rest API [here](https://pact-language.readthedocs.io/en/latest/pact-reference.html#rest-api)
 
 ```
 npm run simple
