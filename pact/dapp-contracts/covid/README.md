@@ -10,7 +10,7 @@ The contract is governed by a capability, "GOVERNANCE". The capability is guarde
 Learn more about Module Governance [here](https://pact-language.readthedocs.io/en/stable/pact-reference.html#generalized-module-governance)
 
 ## Tables
-The contract contains a history table to track the receiver account's activity with the faucet account.
+The contract contains a `test-table-three` to store test results and a `printer-table-three` to store printing entity information.
 - **test-table-three** : `test-manufacturer` `test-model` `age-group` `gender` `country` `zipcode` `result` `patient-hash` `last-mod-time` `pub-key-init-bh` `test-init-bh` `test-end-bh`
 - **printer-table-three** : `authorized` `entity-name` `test-pub-keys`
 
