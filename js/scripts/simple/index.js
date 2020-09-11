@@ -53,10 +53,16 @@ const main = async () => {
   console.log(txRes)
   if (!txRes.requestKeys) exitMessage("Send Request Failed");
 
-  // Send the command to /poll endpoint and retrieve transaction Result
+  // Send the requestKey to /listen endpoint and retrieve transaction Result
+  await question("\nSending request to /listen endpoint to fetch the result. Wait ~30 seconds after sending in transaction. Enter to Continue.\n")
+  await Pact.fetch.listen({listen: txRes.requestKeys[0]}, apiHost("us1.testnet.chainweb.com", "testnet04", "0"))
+    .then(console.log)
+
+  // Send the requestKey to /poll endpoint and retrieve transaction Result
   await question("\nSending request to /poll endpoint to fetch the result. Wait ~30 seconds after sending in transaction. Enter to Continue.\n")
   await Pact.fetch.poll(txRes, apiHost("us1.testnet.chainweb.com", "testnet04", "0"))
     .then(console.log)
+
 
   exitMessage("End of the script")
 }
