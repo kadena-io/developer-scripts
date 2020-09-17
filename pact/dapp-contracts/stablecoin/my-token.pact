@@ -1,4 +1,4 @@
-; (namespace "user")
+(namespace "user")
 (module my-token GOVERNANCE
 
 

@@ -38,4 +38,5 @@
     (require-capability (ALLOW_GAS))
   )
 )
+
 (coin.transfer-create "covid-admin" "covid-gas-payer" (user.covid-gas-station.create-gas-payer-guard) 2.0)

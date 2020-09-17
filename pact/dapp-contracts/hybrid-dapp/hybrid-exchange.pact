@@ -121,33 +121,33 @@
     @doc "user calls this when wanting to transfer hybrid token \
     \ to Kuro private network"
     (with-capability (REGISTERED_USER account)
-     (with-read hybrid-table-2 account
+      (with-read hybrid-table-2 account
         {"ht-balance":= balance-user,
-        "ht-account":= ht-account}
+         "ht-account":= ht-account}
         (enforce (>= balance-user amount) "amount must be less than your current balance")
         (enforce (> amount 0.0) "amount must be positive")
-      (debit-ht-user account amount)
-      ;;create a uniqueID -> account + timestamp
-      (let* ((ts (format-time "%Y-%m-%d%H:%M:%S.%v" (at "block-time" (chain-data))))
-            (id (format "{}-{}" [account, ts])))
-        (insert txs-table-2 id
-          {"account": account,
-          "amount": amount,
-          "status": TX_OPEN,
-          "time": ts})
-        (with-read hybrid-table-2 account
-            {"req-history":= req-history}
-        (if ht-account
-            (update hybrid-table-2 account
-                {"req-history": (+ req-history [ts])}))
-            (update hybrid-table-2 account
+        (debit-ht-user account amount)
+        ;;create a uniqueID -> account + timestamp
+        (let* ((ts (format-time "%Y-%m-%d%H:%M:%S.%v" (at "block-time" (chain-data))))
+          (id (format "{}-{}" [account, ts])))
+          (insert txs-table-2 id
+            { "account": account,
+              "amount": amount,
+              "status": TX_OPEN,
+              "time": ts })
+            (with-read hybrid-table-2 account
+              {"req-history":= req-history}
+              ; (if ht-account
+              ; (update hybrid-table-2 account
+              ; {"req-history": (+ req-history [ts])}))
+              (update hybrid-table-2 account
                 {"ht-account": true,
-                "req-history": (+ req-history [ts])}))
-        ;return some info to user
-        (format "Confirmation that your request ({}) is being processed..." [id])
-      )))
+                 "req-history": (+ req-history [ts])}))
+            ;return some info to user
+            (format "Confirmation that your request ({}) is being processed..." [id])
+          )))
   )
-
+  
   (defun credit-ht (account:string amount:decimal)
     @doc "ADMIN ONLY: credit user account with amount \
     \ used for incoming tokens FROM Kuro"
@@ -267,7 +267,6 @@
 
 )
 
-;(create-table hybrid-table-2)
-;(create-table txs-table-2)
-;(init-admin-account)
-;(transfer-create "hybrid-admin" ADMIN_ACCOUNT (ht-guard) 1.0)
+(create-table hybrid-table-2)
+(create-table txs-table-2)
+(init-admin-account)

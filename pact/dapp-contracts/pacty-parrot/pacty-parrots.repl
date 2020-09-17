@@ -1,43 +1,61 @@
 (begin-tx)
 
+;;Load Namespace Contract
+(env-data
+ { 'ns-admin-keyset: ["admin"]
+ , 'ns-operate-keyset: ["operate"]
+ , 'ns-genesis-keyset: { "keys": [], "pred": "="} })
+(load "../../dapp-contracts/namespaces/ns.pact")
 
-(env-data { "k1" : ["keys1"],
-  "k2": ["keys2"],
-  "k3": ["keys3"],
-  "croesus-keyset" : ["croesus-key"],
+;;Load Coin Contract
+(load "../../dapp-contracts/coin-contract/fungible-v2.pact")
+(load "../../dapp-contracts/coin-contract/coin.pact")
+(create-table coin.coin-table)
+
+(env-data { "contract-admins" : ["contract-admins"]})
+(test-capability (COINBASE))
+(coinbase 'contract-admins (read-keyset 'contract-admins) 1000000.0)
+
+(commit-tx)
+
+(begin-tx)
+
+(env-data { "player-1" : ["keys1"],
   "parrot-admin-keyset": ["croesus-key"],
-  "player-one": ["p1-keys"],
-  "player-two": ["p2-keys"],
-  "p3": ["p3-keys"],
   "parrot-bank": ["parrot-bank-key"]})
+
 (env-keys ["keys1", "keys2",
   "keys3", "croesus-key",
   "p1-keys", "p2-keys",
   "p3-keys", "parrot-bank-key"])
-;(define-keyset 'k1 (read-keyset "k1"))
-;(define-keyset 'k2 (read-keyset "k2"))
-;(define-keyset 'k3 (read-keyset "k3"))
 
 (define-keyset "parrots-admin-keyset" (read-keyset "parrot-admin-keyset"))
+(env-keys ["contract-admins"])
 
-
-(load "../coin-contract/coin.pact")
 (load "pacty-parrots.pact")
-
-
-
 
 (commit-tx)
 
 (begin-tx)
 
 (use coin)
+(use user.pacty-parrots)
 
+;;Fund Parrot Bank
+(env-sigs [
+  {
+  'key: "contract-admins",
+  'caps: [
+    (coin.TRANSFER 'contract-admins PARROTS_ACCOUNT 100000.0)
+    ]
+  }])
+
+(transfer-create "contract-admins" PARROTS_ACCOUNT (parrots-guard) 100000.0)
+
+;;Fund player-1
 (test-capability (COINBASE))
-(coinbase 'k1 (read-keyset 'k1) 10.0)
-(coinbase 'k2 (read-keyset 'k2) 10.0)
-(coinbase "croesus" (read-keyset "croesus-keyset") 50000.0)
-(coinbase "parrot-bank" (read-keyset "croesus-keyset") 50000.0)
+(env-data { "player-1" : ["keys1"]})
+(coinbase 'player-1 (read-keyset 'player-1) 10.0)
 
 (commit-tx)
 
@@ -53,135 +71,85 @@
 
 (begin-tx)
 
-(use pacty-parrots)
+(use user.pacty-parrots)
 (use coin)
 
-(env-data { "k1" : ["keys2"],
-  "k2": ["keys2"],
-  "k3": ["keys3"],
-  "croesus-keyset" : ["croesus-key"],
-  "parrot-admin-keyset": ["croesus-key"],
-  "player-one": ["p1-keys"],
-  "player-two": ["p2-keys"],
-  "p3": ["p3-keys"],
-  "parrot-bank": ["parrot-bank-key"]})
+(env-data { "player-1" : ["keys1"] })
+
 (env-keys ["keys1", "keys2",
   "keys3", "croesus-key",
   "p1-keys", "p2-keys",
   "p3-keys", "parrot-bank-key"])
 
-  (env-chain-data {
-    "chain-id": "0",
-    "block-height": 20,
-    "prev-block-hash": "dsdjhhhhakjssssasasasasskdhahhhskd"})
-
-(start-round "k1" (read-keyset "k1") 10.0)
-(get-current-round-info "k1")
-(account-balance "k1")
-;(parrot-draw)
 (env-chain-data {
   "chain-id": "0",
   "block-height": 20,
-  "prev-block-hash": "dsdjhhhhakjssssasasasasskdhahhhskd"})
-(continue-round "k1")
-(get-current-round-info "k1")
+  "prev-block-hash": "dsdjhhhhakjssssasasasasskdhahhhska"})
 
+(env-sigs [
+  {
+  'key: "keys1",
+  'caps: [
+    (coin.TRANSFER "player-1" "parrot-bank" 15.0)
+    (BET "player-1")
+    ]
+  }])
 
+;;First Round
 
-;closes the round
-;(env-chain-data {
-;  "chain-id": "0",
-;  "block-height": 20,
-;  "prev-block-hash": "dsdjkjdhjdsjhdshjskd"})
-;(continue-round 0 "k1")
+(expect "10.0" 10.0 (get-balance "player-1"))
 
+;;First Roll
+(start-round "player-1")
+(get-current-round-info "player-1")
+
+(expect "5.0" 5.0 (get-balance "player-1"))
+
+;;Second Roll
 (env-chain-data {
   "chain-id": "0",
-  "block-height": 20,
-  "prev-block-hash": "dsdjkjdhjsadsadasadsdsjhdshjskd"})
-(continue-round "k1")
-(get-current-round-info "k1")
-(end-round "k1")
-(get-current-round-info "k1")
-(account-balance "k1")
+  "block-height": 21,
+  "prev-block-hash": "dsdjhhhhakjssssasasasasskdhahhhskb"})
+
+(continue-round "player-1")
+(get-current-round-info "player-1")
+
+;;Third Roll
+(env-chain-data {
+  "chain-id": "0",
+  "block-height": 22,
+  "prev-block-hash": "dsdjkjdhjsadsadasadsdsjhdshjskc"})
+
+(continue-round "player-1")
+(get-current-round-info "player-1")
+
+(env-sigs [
+  {
+  'key: "keys1",
+  'caps: [
+    (coin.TRANSFER "parrot-bank" "player-1" 331.0)
+    (BET "player-1")
+    ]
+  }])
+
+(end-round "player-1")
+
+(get-current-round-info "player-1")
+(get-table "player-1")
+
+(expect "316.0" 316.0 (get-balance "player-1"))
 
 
-
-(get-table "k1")
-
+;;Second Round
 (env-chain-data {
   "chain-id": "0",
   "block-height": 20,
   "prev-block-hash": "dsdjkjdhjsadsadsdsjhdshjskd"})
-(start-round "k1" (read-keyset "k1") 10.0)
-(get-current-round-info "k1")
-;(account-balance "k1")
-;(env-chain-data {
-;  "chain-id": "0",
-;  "block-height": 20,
-;  "prev-block-hash": "dsdjhhhhakjskdhahhhskd"})
-(continue-round "k1")
-(get-current-round-info "k1")
-(env-chain-data {
-  "chain-id": "0",
-  "block-height": 20,
-  "prev-block-hash": "dsdjkjdhjsajfjjjffjfjjffjsdsjhdshjskd"})
-(continue-round "k1")
-(get-current-round-info "k1")
-(end-round "k1")
-(get-current-round-info "k1")
-(account-balance "k1")
 
-
-(env-chain-data {
-  "chain-id": "0",
-  "block-height": 20,
-  "prev-block-hash": "dsdjkjdhjsadsssssjhdsajhdsajhkdkhsajkhjdashkjadaaaasdsjhdshjskd"})
-(start-round "k1" (read-keyset "k1") 10.0)
-(get-current-round-info "k1")
-;(account-balance "k1")
-;(env-chain-data {
-;  "chain-id": "0",
-;  "block-height": 20,
-;  "prev-block-hash": "dsdjhhhhakjskdhahhhskd"})
-(continue-round "k1")
-(get-current-round-info "k1")
-(env-chain-data {
-  "chain-id": "0",
-  "block-height": 20,
-  "prev-block-hash": "dsdjkjdhjsasdasdasdasdasdasdsjhdshjskd"})
-(continue-round "k1")
-(get-current-round-info "k1")
-(end-round "k1")
-(get-current-round-info "k1")
-(account-balance "k1")
-
-
-
-(start-round "k1" (read-keyset "k1") 10.0)
-(get-current-round-info "k1")
-(account-balance "k1")
-;(parrot-draw)
-(env-chain-data {
-  "chain-id": "0",
-  "block-height": 20,
-  "prev-block-hash": "dsdjhhhhakjssssasasasasskdhahhhskd"})
-(continue-round "k1")
-(get-current-round-info "k1")
-(end-round "k1")
-
-
-(get-table "k1")
-
-(get-users)
-
-(commit-tx)
-
-
-(begin-tx)
-
-(use pacty-parrots)
-
-(get-current-round-info "k1")
+;Zeroed out and round closed due to cop result.
+(start-round "player-1")
+(get-current-round-info "player-1")
+(expect-failure "Round is closed" (continue-round "player-1"))
+(expect "311.0" 311.0 (get-balance "player-1"))
 
 (commit-tx)

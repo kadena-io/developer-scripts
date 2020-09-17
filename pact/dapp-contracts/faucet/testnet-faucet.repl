@@ -1,3 +1,72 @@
-(env-keys ["faucetadmin"])
-(env-data { "contract-admins":
-  { "keys": ["faucetadmin"], "pred": "keys-all" } })
+(begin-tx)
+
+;;Load Namespace Contract
+(env-data
+ { 'ns-admin-keyset: ["admin"]
+ , 'ns-operate-keyset: ["operate"]
+ , 'ns-genesis-keyset: { "keys": [], "pred": "="} })
+(load "../../dapp-contracts/namespaces/ns.pact")
+
+;;Load Coin Contract
+(load "../../dapp-contracts/coin-contract/fungible-v2.pact")
+(load "../../dapp-contracts/coin-contract/coin.pact")
+(create-table coin.coin-table)
+
+(env-data {
+  "contract-admins" : ["contract-admins"]
+  })
+
+(test-capability (COINBASE))
+(coinbase 'contract-admins (read-keyset 'contract-admins) 1000000.0)
+
+(env-keys ["contract-admins"])
+(load "testnet-faucet.pact")
+(commit-tx)
+
+(use user.coin-faucet)
+(env-chain-data {"block-time": (time "2019-08-27T12:00:00Z")})
+
+;;coinbase faucet-account
+(test-capability (coin.COINBASE))
+(coin.coinbase 'coin-faucet (faucet-guard) 1000.0)
+
+(env-data {
+  "test-0-keyset": ["test-0-key"],
+  "test-1-keyset": ["test-1-key"]
+  })
+
+(env-sigs [
+  {
+  'key: "0",
+  'caps: [
+    (coin.TRANSFER "coin-faucet" "test-0" 40.1)
+    ]
+  }
+  {
+  'key: "1",
+  'caps: [
+    (coin.TRANSFER "coin-faucet" "test-1" 40.1)
+    ]
+  }
+  {
+  'key: "test-1-key",
+  'caps: [
+    (coin.TRANSFER "test-1" "coin-faucet" 40.1)
+    ]
+  }
+  ])
+
+;;Test request-coin
+(coin.create-account "test-0" (read-keyset "test-0-keyset"))
+(expect-failure "exceeded request limit" (request-coin "test-0" 20.1))
+(expect "Write succeeded" "Write succeeded" (request-coin "test-0" 20.0))
+
+;;Test create-and-request-coin
+(expect "Write succeeded" "Write succeeded"
+  (create-and-request-coin "test-1" (read-keyset "test-1-keyset") 20.0))
+
+;;Test return-coin
+(expect "Write succeeded" "Write succeeded"
+  (return-coin "test-1" 10.0))
+(expect-failure "Insufficient funds"
+  (return-coin "test-1" 10.1))

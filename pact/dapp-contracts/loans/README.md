@@ -37,7 +37,7 @@ Learn more about Pact tables [here](https://pact-language.readthedocs.io/en/late
 
 ### sell-a-loan
   - Sell a loan with the parameters: `txid` `loanId` `buyer` `seller` `amount`
-  - Insert the transction into `loans-history` and update the balance on `loans-inventory-table`
+  - Insert the transaction into `loans-history` and update the balance on `loans-inventory-table`
   ```
   (sell-loan "TX_1" "C30231G102-1" "McKesson" "Exxon Mobil" 2000)
   ```

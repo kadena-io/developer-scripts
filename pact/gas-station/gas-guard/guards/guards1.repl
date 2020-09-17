@@ -1,0 +1,184 @@
+;; guards1.repl
+(enforce-pact-version "3.5.0")
+
+(env-data
+ { 'util-ns-users: ["util-ns-user"]
+ , 'util-ns-admin: ["util-ns-admin"]
+ })
+(env-keys ["util-ns-user", "util-ns-admin"])
+
+(begin-tx)
+(load "../util/util-ns.pact")
+(commit-tx)
+
+
+(begin-tx)
+(load "guards1.pact")
+(commit-tx)
+
+(begin-tx)
+(use util.guards1)
+
+;;set chain gas price to 0.0005 and chain gas limit to 500
+(env-chain-data {
+  "gas-price": 0.0005,
+  "gas-limit": 500
+})
+
+;;Test max-gas-notional
+(expect
+  (format "chain-gas-notional {} is smaller than max-gas-notional {}"
+    [(chain-gas-notional), 0.5])
+  true
+  (enforce-guard (max-gas-notional 0.5)))
+
+(expect
+  (format "chain-gas-notional {} is at than max-gas-notional {}"
+    [(chain-gas-notional), 0.25])
+  true
+  (enforce-guard (max-gas-notional 0.25)))
+
+(expect-failure
+  (format "chain-gas-notional {} is bigger than than max-gas-notional {}"
+    [(chain-gas-notional), 0.24])
+  "Gas Limit * Gas Price must be smaller than or equal to 0.24"
+  (enforce-guard (max-gas-notional 0.24)))
+
+;;Test max-gas-price
+(expect
+  (format "chain-gas-price {} is smaller than max-gas-price {}"
+    [(chain-gas-price) 0.00051])
+  true
+  (enforce-guard (max-gas-price 0.00051)))
+
+(expect
+  (format "chain-gas-price {} is at max-gas-price {}"
+    [(chain-gas-price) 0.0005])
+  true
+  (enforce-guard (max-gas-price 0.0005)))
+
+(expect-failure
+  (format "chain-gas-price {} is bigger than max-gas-price {}"
+    [(chain-gas-price) 0.00049])
+  "Gas Price must be smaller than or equal to 0.00049"
+  (enforce-guard (max-gas-price 0.00049)))
+
+;;Test max-gas-limit
+(expect
+  (format "chain-gas-limit {} is smaller than max-gas-limit {}"
+    [(chain-gas-limit) 600])
+  true
+  (enforce-guard (max-gas-limit 600)))
+
+(expect
+  (format "chain-gas-limit {} is at max-gas-limit {}"
+    [(chain-gas-limit) 500])
+  true
+  (enforce-guard (max-gas-limit 500)))
+
+(expect-failure
+  (format "chain-gas-limit {} is bigger than max-gas-limit {}"
+    [(chain-gas-limit) 400])
+  "Gas Limit must be smaller than or equal to 400"
+  (enforce-guard (max-gas-limit 400)))
+
+;;Set env-data with bob-ks and ks
+(env-data {"bob-ks": ["bob"], "ks": ["ks"]})
+;;Sign bob-ks
+(env-keys ["bob"])
+
+;;Examples of successful and failing guards for testing `guard-any` and `guard-all`
+(expect "Bob-ks is signed"
+  true
+  (enforce-guard (read-keyset 'bob-ks)))
+(expect "chain-gas-price is smaller than max-gas-price"
+  true
+  (enforce-guard (max-gas-price 0.0006)))
+(expect "chain-gas-limit is smaller than max-gas-limit"
+  true
+  (enforce-guard (max-gas-limit 600)))
+(expect-failure "ks is not signed"
+  "Keyset failure (keys-all): [ks]"
+  (enforce-guard (read-keyset 'ks)))
+(expect-failure "chain-gas-price is bigger than max-gas-price"
+  "Gas Price must be smaller than or equal to 0.0004"
+  (enforce-guard (max-gas-price 0.0004)))
+(expect-failure "chain-gas-limit is bigger than max-gas-limit"
+  "Gas Limit must be smaller than or equal to 300"
+  (enforce-guard (max-gas-limit 300)))
+
+;;Test guard-all
+(expect-failure "guard-all cannot take in an empty list"
+  "Guard list cannot be empty"
+  (guard-all []))
+
+(expect-failure "0/3 of the guard enforcements succeed"
+  "Keyset failure (keys-all): [ks]"
+  (enforce-guard (guard-all [
+      (read-keyset 'ks)
+      (max-gas-price 0.0004)
+      (max-gas-limit 300)
+    ])))
+
+(expect-failure "1/3 of the guard enforcements succeed"
+  "Gas Price must be smaller than or equal to 0.0004"
+  (enforce-guard (guard-all [
+      (read-keyset 'bob-ks)
+      (max-gas-price 0.0004)
+      (max-gas-limit 300)
+  ])))
+
+(expect-failure "2/3 of the guard enforcements succeed"
+  "Gas Limit must be smaller than or equal to 300"
+  (enforce-guard (guard-all [
+      (read-keyset 'bob-ks)
+      (max-gas-price 0.0006)
+      (max-gas-limit 300)
+    ])))
+
+(expect "3/3 of the guard enforcements succeed"
+  true
+  (enforce-guard (guard-all [
+      (read-keyset 'bob-ks)
+      (max-gas-price 0.0006)
+      (max-gas-limit 600)
+      ])))
+
+;;Test guard-any
+(expect-failure "guard-any cannot take in an empty list"
+  "Guard list cannot be empty"
+  (guard-any []))
+
+(expect-failure "0/3 of the guard enforcements succeed"
+  "None of the guards passed"
+  (enforce-guard (guard-any [
+      (read-keyset 'ks)
+      (max-gas-price 0.0004)
+      (max-gas-limit 300)
+    ])))
+
+(expect "1/3 of the guard enforcements succeed"
+  true
+  (enforce-guard (guard-any [
+      (read-keyset 'bob-ks)
+      (max-gas-price 0.0004)
+      (max-gas-limit 300)
+    ])))
+
+(expect "2/3 of the guard enforcements succeed"
+  true
+  (enforce-guard (guard-any [
+      (read-keyset 'bob-ks)
+      (max-gas-price 0.0006)
+      (max-gas-limit 300)
+    ])))
+
+(expect "3/3 of the guard enforcements succeed"
+  true
+  (enforce-guard (guard-any [
+      (read-keyset 'bob-ks)
+      (max-gas-price 0.0006)
+      (max-gas-limit 600)
+      ])))
+
+(commit-tx)

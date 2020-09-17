@@ -1,12 +1,26 @@
-(env-keys ["hello-keyset"])
-(env-data {
-  "hello-keyset": { "keys": ["hello"], "pred": "keys-all" }})
-
 (begin-tx)
-(load "hello-world.pact")
+
+;;Load Namespace Contract
+(env-data
+ { 'ns-admin-keyset: ["admin"]
+ , 'ns-operate-keyset: ["operate"]
+ , 'ns-genesis-keyset: { "keys": [], "pred": "="} })
+(load "../../dapp-contracts/namespaces/ns.pact")
+
 (commit-tx)
 
-(use hello-world)
+(begin-tx)
+
+(env-data {
+  "hello-keyset": { "keys": ["hello"], "pred": "keys-all" }})
+(env-keys ["hello"])
+
+(define-keyset 'hello-keyset (read-keyset 'hello-keyset))
+(load "hello-world.pact")
+
+(commit-tx)
+
+(use free.hello-world)
 
 ;;Add greeters "Kadena", "Chainweb", "Mainnet". "20-chain"
 (expect "Kadena was here." "Kadena was here." (here "Kadena"))

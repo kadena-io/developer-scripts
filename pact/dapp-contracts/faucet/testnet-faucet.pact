@@ -11,7 +11,7 @@
   ; --------------------------------------------------------------------------
 
   (defcap GOVERNANCE ()
-    (enforce-guard (at 'guard (details 'contract-admins))))
+    (enforce-guard (at 'guard (details 'contract-admins )))
     true)
   ; --------------------------------------------------------------------------
   ; Schemas and Tables
@@ -32,7 +32,7 @@
   ; Constants
   ; --------------------------------------------------------------------------
 
-  (defconst FAUCET_ACCOUNT:string 'coin-faucet)
+  (defconst FAUCET_ACCOUNT:string 'coin-faucet )
   (defconst MAX_COIN_PER_REQUEST:decimal 20.0)
   (defconst WAIT_TIME_PER_REQUEST 1800.0)
   (defconst EPOCH (time "1970-01-01T00:00:00Z"))
@@ -41,7 +41,7 @@
   ; Coin Faucet Contract
   ; --------------------------------------------------------------------------
 
-  (defun faucet-guard:guard () (create-module-guard 'faucet-admin))
+  (defun faucet-guard:guard () (create-module-guard 'faucet-admin ) )
 
   (defun request-coin:string (address:string amount:decimal)
 
@@ -107,3 +107,4 @@
 )
 
 (create-table history-table)
+(coin.create-account FAUCET_ACCOUNT (faucet-guard))
