@@ -3,7 +3,6 @@
 This folder contains useful scripts to communicate with Pact servers (nodes) in javascript using [pact-lang-api](https://github.com/kadena-io/pact-lang-api) library.
 
 ## Setup
-
 Install Node >= 8.11.4
 
 Install All Dependencies. The dependencies include Pact Lang API.
