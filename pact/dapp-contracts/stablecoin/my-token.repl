@@ -1,17 +1,28 @@
+(begin-tx)
+
+;;Load Namespace Contract
+(env-data
+ { 'ns-admin-keyset: ["admin"]
+ , 'ns-operate-keyset: ["operate"]
+ , 'ns-genesis-keyset: { "keys": [], "pred": "="} })
+(load "../../dapp-contracts/namespaces/ns.pact")
+
+;;Load Coin Contract
+(load "../../dapp-contracts/coin-contract/fungible-v2.pact")
+(load "../../dapp-contracts/coin-contract/coin.pact")
+(create-table coin.coin-table)
+
+(commit-tx)
+
 (env-keys ["admin"])
 (env-data {
   "admin": { "keys": ["my-token"], "pred": "keys-all" },
   "ops": {"keys": ["ops"], "pred": "keys-all"}})
 
 (begin-tx)
-(load "../coin-contract/fungible-v2.pact")
-(load "../coin-contract/coin.pact")
-(create-table coin.coin-table)
-(commit-tx)
-
-(begin-tx)
 (coin.create-account "my-token-admin" (read-keyset 'admin))
 (coin.create-account "my-token-ops" (read-keyset 'ops))
+(env-keys ["my-token"])
 (load "my-token.pact")
 (commit-tx)
 
@@ -29,8 +40,7 @@
 })
 
 (begin-tx)
-(use my-token)
-
+(use user.my-token)
 ;;mint token
 
 (env-keys ["ops"])
@@ -49,6 +59,7 @@
 (expect-failure
   "No OPS signature"
   (mint "account0" 5.0 (read-keyset "account0-ks")))
+
 
 ;;create account
 (create-account "sender00" (read-keyset "sender00-guard"))

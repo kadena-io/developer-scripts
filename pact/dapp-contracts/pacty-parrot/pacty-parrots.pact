@@ -260,7 +260,8 @@
 
 
 
-;(create-table user-games-table)
+(create-table user-games-table)
+
 ;this can be done post deploy
 ;  by reading the guard from the coin contract
-;(transfer-create "contract-admins" PARROTS_ACCOUNT (parrots-guard) 1000000.0)
+; (transfer-create "contract-admins" PARROTS_ACCOUNT (parrots-guard) 1000000.0)

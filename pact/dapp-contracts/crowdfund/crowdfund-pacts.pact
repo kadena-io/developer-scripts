@@ -1,5 +1,6 @@
-;(namespace "user")
+(namespace "user")
 (define-keyset 'admin-keyset (read-keyset 'admin-keyset))
+
 (module crowdfund-campaign 'admin-keyset
   (use coin)
   ;define campaign schema

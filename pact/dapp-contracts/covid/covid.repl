@@ -2,14 +2,25 @@
 ;; Setup
 ;; ===============
 (begin-tx)
-(load ".coin.pact")
+
+;;Load Namespace Contract
+(env-data
+ { 'ns-admin-keyset: ["admin"]
+ , 'ns-operate-keyset: ["operate"]
+ , 'ns-genesis-keyset: { "keys": [], "pred": "="} })
+(load "../../dapp-contracts/namespaces/ns.pact")
+
+;;Load Coin Contract
+(load "../../dapp-contracts/coin-contract/fungible-v2.pact")
+(load "../../dapp-contracts/coin-contract/coin.pact")
+(create-table coin.coin-table)
 
 ; Create r coin contract account
 (env-data { 'ks: ["adminKey"] })
 (coin.create-account "covid-admin" (read-keyset "ks"))
 
 (env-keys ["adminKey"])
-(load "covid-v2.pact")
+(load "covid.pact")
 ;(typecheck "user.covid" true)
 
 
