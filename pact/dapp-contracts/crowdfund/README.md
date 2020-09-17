@@ -2,7 +2,7 @@
 
 This contract is designed to create a decentralized crowdfunding system using 2-step escrow design.
 
-Learn about Pact's multi-stage sequential transactions, [pacts](https://pact-language.readthedocs.io/en/latest/pact-reference.html#asynchronous-transaction-automation-with-pacts) and [pact-guards](https://pact-language.readthedocs.io/en/latest/pact-reference.html#pact-guards) to leverage its use.
+Learn about Pact's multi-stage sequential transactions, [pacts](https://pact-language.readthedocs.io/en/latest/pact-reference.html#asynchronous-transaction-automation-with-pacts), and [pact-guards](https://pact-language.readthedocs.io/en/latest/pact-reference.html#pact-guards) to leverage its use.
 
 ## Governance
 The contract is governed by a keyset, "admin-keyset"
