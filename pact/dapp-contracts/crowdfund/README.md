@@ -44,7 +44,7 @@ Learn more about Pact tables [here](https://pact-language.readthedocs.io/en/late
 ### cancel-campaign
   - Function for a campaign holder to cancel a campaign before target date: `title`
   - Updates the status of a campaign in the `campaigns-table` to `CANCELLED`
-  - Lets the funds in the `funds-table` tied to the campaign to be refundable.(Step 0-rollback of `fund-campaign`)
+  - Lets the funds in the `funds-table` tied to the campaign to be refundable.(Step 0-rollback of [`fund-campaign`](#fund-campaign))
 ```
 (cancel-campaign 'project1)
 ```  
@@ -53,7 +53,7 @@ Learn more about Pact tables [here](https://pact-language.readthedocs.io/en/late
   - Function to fail a campaign when it does not meet its target raise by target date: `title`
   - Updates the status of a campaign in the `campaigns-table` to `FAILED`
   - Can be executed by any entity if conditions meet.
-  - Lets the funds in the `funds-table` tied to the campaign to be refundable. (Step 0-rollback of `fund-campaign`)
+  - Lets the funds in the `funds-table` tied to the campaign to be refundable. (Step 0-rollback of [`fund-campaign`](#fund-campaign))
 
 ```
 (fail-campaign 'project1)
@@ -63,7 +63,7 @@ Learn more about Pact tables [here](https://pact-language.readthedocs.io/en/late
   - Function to succeed a campaign when it meets its target raise by target date: `title`
   - Updates the status of a campaign in the `campaigns-table` to `SUCCEEDED`
   - Can be executed by any entity if conditions meet.
-  - Lets the funds in the `funds-table` tied to the campaign to be transferred to campaign holder's account. (Step 1 of `fund-campaign`)
+  - Lets the funds in the `funds-table` tied to the campaign to be transferred to campaign holder's account. (Step 1 of [`fund-campaign`](#fund-campaign))
 
 ```
 (fail-campaign 'project1)
