@@ -9,12 +9,16 @@ const creationTime = () => Math.round((new Date).getTime()/1000);
 const sampleBuilder = (name) => {
   if (!name) name = "Anonymous"
   return {
-    keyPairs: [],
+    keyPairs: {...Pact.crypto.genKeyPair(), clist: [
+      {
+        name: `free.memory-wall-gas-station.GAS_PAYER`,
+        args: ["gas-payer", {int: 0}, 1.0]
+      }]},
     type: "exec",
-    pactCode: `(format "Hello {}" [${JSON.stringify(name)}])`,
+    pactCode: `(free.memory-wall.here ${JSON.stringify(name)})`,
     nonce: "Developer Script - simple",
     envData: {},
-    meta: Pact.lang.mkMeta("free-x-chain-gas" , "0", 0.00000000001, 350, creationTime(), 600),
+    meta: Pact.lang.mkMeta("mw-free-gas" , "0", 0.00000000001, 350, creationTime(), 600),
     networkId: "testnet04"
   }
 };
