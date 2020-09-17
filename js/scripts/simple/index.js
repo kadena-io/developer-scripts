@@ -67,7 +67,6 @@ const main = async () => {
   await Pact.fetch.poll(txRes, apiHost("us1.testnet.chainweb.com", "testnet04", "0"))
     .then(console.log)
 
-
   exitMessage("End of the script")
 }
 

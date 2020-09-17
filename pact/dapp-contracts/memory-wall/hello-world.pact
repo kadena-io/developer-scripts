@@ -1,4 +1,4 @@
-(namespace "free")
+; (namespace "free")
 
 (module hello-world GOVERNANCE
   "A smart contract to greet the world."

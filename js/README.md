@@ -4,6 +4,7 @@ This folder contains useful scripts to communicate with Pact servers (nodes) in 
 
 ## Setup
 Install Node >= 8.11.4
+
 Install All Dependencies. The dependencies include Pact Lang API.
 ```
 npm install

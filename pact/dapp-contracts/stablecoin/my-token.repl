@@ -1,10 +1,103 @@
-(env-keys ["silvertoken"])
-(env-data { "silvertoken-admin":
-  { "keys": ["silvertoken"], "pred": "keys-all" } })
+(env-keys ["admin"])
+(env-data {
+  "admin": { "keys": ["my-token"], "pred": "keys-all" },
+  "ops": {"keys": ["ops"], "pred": "keys-all"}})
 
 (begin-tx)
-(load "stablecoin.pact")
+(load "../coin-contract/fungible-v2.pact")
+(load "../coin-contract/coin.pact")
+(create-table coin.coin-table)
 (commit-tx)
 
+(begin-tx)
+(coin.create-account "my-token-admin" (read-keyset 'admin))
+(coin.create-account "my-token-ops" (read-keyset 'ops))
+(load "my-token.pact")
+(commit-tx)
 
-;; Write repl tests
+(env-data { "account0-ks":
+  { "keys": ["my-token"], "pred": "keys-all" } })
+
+
+(env-data {
+  "account0-ks":
+    { "keys": ["account0"], "pred": "keys-all" },
+  "sender00-guard":
+    { "keys": ["sender00"], "pred": "keys-all" },
+  "sender01-guard":
+    { "keys": ["sender01"], "pred": "keys-all" }
+})
+
+(begin-tx)
+(use my-token)
+
+;;mint token
+
+(env-keys ["ops"])
+
+;;Balance before mint
+(expect-failure "account0 doesn't exist" (get-balance "account0"))
+
+;;mint token
+(mint "account0" 5.0 (read-keyset "account0-ks"))
+
+;;Balance after mint
+(expect "5.0" 5.0 (get-balance "account0"))
+
+;;mint failure
+(env-keys [])
+(expect-failure
+  "No OPS signature"
+  (mint "account0" 5.0 (read-keyset "account0-ks")))
+
+;;create account
+(create-account "sender00" (read-keyset "sender00-guard"))
+
+;;transfer
+
+;;Balance before transfer
+(expect "5.0" 5.0 (get-balance "account0"))
+(expect "0.0" 0.0 (get-balance "sender00"))
+
+;;transfer
+(env-sigs [{'key: "account0", 'caps: [(TRANSFER "account0" "sender00" 1.0)]}])
+(transfer "account0" "sender00" 1.0)
+
+;;Balance after transfer
+(expect "4.0" 4.0 (get-balance "account0"))
+(expect "1.0" 1.0 (get-balance "sender00"))
+
+
+;;transfer-create
+
+;;Balance before transfer-create
+(expect "4.0" 4.0 (get-balance "account0"))
+(expect-failure "sender01 doesn't exist" (get-balance "sender01"))
+
+;;transfer-create
+(env-sigs [{'key: "account0", 'caps: [(TRANSFER "account0" "sender01" 1.0)]}])
+(transfer-create "account0" "sender01" (read-keyset 'sender01-guard) 1.0)
+
+;;Balance after transfer-create
+(expect "3.0" 3.0 (get-balance "account0"))
+(expect "1.0" 1.0 (get-balance "sender01"))
+
+;;burn token
+
+;;add OPS sig
+(env-keys ["ops"])
+
+;;Balance before burn
+(expect "3.0" 3.0 (get-balance "account0"))
+;;burn
+(burn "account0" 1.0)
+;;Balance after burn
+(expect "2.0" 2.0 (get-balance "account0"))
+
+;;remove OPS sig
+(env-keys [])
+(expect-failure
+  "No OPS signature"
+  (burn "account0" 1.0))
+
+(commit-tx)
