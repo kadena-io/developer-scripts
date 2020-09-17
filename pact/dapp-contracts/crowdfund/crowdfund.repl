@@ -34,6 +34,7 @@
 
 (create-account "crowd-acct" (read-keyset "crowd-keyset"))
 (create-campaign "project1" "DESCRIPTION" "crowd-acct" 800.0 (time "2019-08-21T12:00:00Z") (time "2019-08-26T12:00:00Z"))
+
 (read-campaigns)
 (commit-tx)
 

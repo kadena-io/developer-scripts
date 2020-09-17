@@ -41,7 +41,6 @@
 
 (begin-tx)
 (use user.my-token)
-
 ;;mint token
 
 (env-keys ["ops"])
@@ -60,6 +59,7 @@
 (expect-failure
   "No OPS signature"
   (mint "account0" 5.0 (read-keyset "account0-ks")))
+
 
 ;;create account
 (create-account "sender00" (read-keyset "sender00-guard"))
