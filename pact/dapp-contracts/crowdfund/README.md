@@ -1,6 +1,8 @@
 # Crowdfunding App
 
-This contract is designed to create a escrow crowdfunding system using blockchain.
+This contract is designed to create a decentralized crowdfunding system using 2-step escrow design.
+
+Learn about Pact's multi-stage sequential transactions, [pacts](https://pact-language.readthedocs.io/en/latest/pact-reference.html#asynchronous-transaction-automation-with-pacts) and [pact-guards](https://pact-language.readthedocs.io/en/latest/pact-reference.html#pact-guards) to leverage its use.
 
 ## Governance
 The contract is governed by a keyset, "admin-keyset"
@@ -28,7 +30,7 @@ Learn more about Pact tables [here](https://pact-language.readthedocs.io/en/late
 
 ### fund-campaign
   - Function to fund a campaign in the table: `from` `title` `amount` `escrow`
-  - A multi-step, "pacts" function to use escrow account in funding the campaign. Learn about `pacts` [here](https://pact-language.readthedocs.io/en/latest/pact-reference.html#asynchronous-transaction-automation-with-pacts).
+  - A multi-step, ["pacts"](https://pact-language.readthedocs.io/en/latest/pact-reference.html#asynchronous-transaction-automation-with-pacts) function to use escrow account in funding the campaign. Learn about *pacts* [here](https://pact-language.readthedocs.io/en/latest/pact-reference.html#asynchronous-transaction-automation-with-pacts).
     - Step 0: Secure amount from the user's account into designated escrow account.
     - Step 0 - rollback: Refund the amount from escrow account back to user's account.
       - Only executed if the user signs it, campaign is canceled, or failed to meet its target raise after the target date.
