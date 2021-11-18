@@ -1,6 +1,6 @@
 # Developer Scripts
 
-This project is to provide developers with useful Smart Contract samples and JS tools to easily interact with Kadena Network.
+This project is to provide developers with useful Smart Contract samples and JavaScript tools to easily interact with Kadena Network.
 
 ## Smart Contracts
   - [Stable Coin](pact/dapp-contracts/stablecoin)
@@ -16,11 +16,11 @@ This project is to provide developers with useful Smart Contract samples and JS 
   - [Gas Guard](pact/gas-station/gas-guard)
   - [Gas Payer](pact/gas-station/gas-payer)
 
-## Utility Scipts
+## Utility Scripts
   - [Safe Transfer](pact/utility/safe-transfer)
   - [Safe Rotate](pact/utility/safe-rotate)
 
-## Javascript
+## JavaScript
   - [Simple Command Requests](js)
   - [Signing API](js)
 
@@ -28,4 +28,4 @@ This project is to provide developers with useful Smart Contract samples and JS 
   - [Pact Smart Contract Language Reference](https://pact-language.readthedocs.io/)
   - [Pact Developer Tutorial](https://pactlang.org/)
 
-Play around with the samples and try deploying your own contracts or gas stations. You can easily interact with Kadena Mainnet or Testnet with our Developer-friendly wallet,  [Chainweaver](https://www.kadena.io/chainweaver)
+Play around with the samples and try deploying your own contracts or gas stations. You can easily interact with Kadena Mainnet or Testnet with our developer-friendly wallet,  [Chainweaver](https://www.kadena.io/chainweaver)
